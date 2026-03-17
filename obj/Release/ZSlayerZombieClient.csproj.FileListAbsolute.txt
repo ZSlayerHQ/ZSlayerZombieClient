@@ -1,0 +1,11 @@
+D:\Games\SPT 2026\Development\Projects\Build\ZSlayerZombieClient\bin\Release\ZSlayerZombieClient.deps.json
+D:\Games\SPT 2026\Development\Projects\Build\ZSlayerZombieClient\bin\Release\ZSlayerZombieClient.dll
+D:\Games\SPT 2026\Development\Projects\Build\ZSlayerZombieClient\bin\Release\ZSlayerZombieClient.pdb
+D:\Games\SPT 2026\Development\Projects\Build\ZSlayerZombieClient\obj\Release\ZSlayerZombieClient.csproj.AssemblyReference.cache
+D:\Games\SPT 2026\Development\Projects\Build\ZSlayerZombieClient\obj\Release\PluginInfo.cs
+D:\Games\SPT 2026\Development\Projects\Build\ZSlayerZombieClient\obj\Release\ZSlayerZombieClient.GeneratedMSBuildEditorConfig.editorconfig
+D:\Games\SPT 2026\Development\Projects\Build\ZSlayerZombieClient\obj\Release\ZSlayerZombieClient.AssemblyInfoInputs.cache
+D:\Games\SPT 2026\Development\Projects\Build\ZSlayerZombieClient\obj\Release\ZSlayerZombieClient.AssemblyInfo.cs
+D:\Games\SPT 2026\Development\Projects\Build\ZSlayerZombieClient\obj\Release\ZSlayerZombieClient.csproj.CoreCompileInputs.cache
+D:\Games\SPT 2026\Development\Projects\Build\ZSlayerZombieClient\obj\Release\ZSlayerZombieClient.dll
+D:\Games\SPT 2026\Development\Projects\Build\ZSlayerZombieClient\obj\Release\ZSlayerZombieClient.pdb
