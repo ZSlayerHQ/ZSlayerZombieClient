@@ -11,7 +11,7 @@ using ZSlayerZombieClient.Layers;
 
 namespace ZSlayerZombieClient;
 
-[BepInPlugin("com.zslayerhq.zombieclient", "ZSlayer Zombie Client", "0.1.0")]
+[BepInPlugin("com.zslayerhq.zombieclient", "ZSlayer SPT Zombies", "0.1.0")]
 [BepInDependency("xyz.drakia.bigbrain", BepInDependency.DependencyFlags.HardDependency)]
 [BepInDependency("me.sol.sain", BepInDependency.DependencyFlags.SoftDependency)]
 public class Plugin : BaseUnityPlugin
@@ -32,7 +32,7 @@ public class Plugin : BaseUnityPlugin
         // Check if SAIN is loaded
         SainAvailable = IsSainLoaded();
 
-        Log.LogInfo($"[ZSlayerHQ] ZSlayer Zombie Client v{Info.Metadata.Version}");
+        Log.LogInfo($"[ZSlayerHQ] ZSlayer SPT Zombies v{Info.Metadata.Version}");
         Log.LogInfo($"[ZSlayerHQ] BigBrain: required (loaded)");
         Log.LogInfo($"[ZSlayerHQ] SAIN: {(SainAvailable ? "detected — enhanced AI active" : "not found — using BigBrain layers only")}");
 

@@ -1092,7 +1092,7 @@ public class ZombieService(
 
         var bar = new string('═', 52);
         logger.Info($"{yellow}╔{bar}╗{reset}");
-        logger.Info($"{yellow}║{reset}{cyan}    ☣ ZSlayer Zombies v{ModMetadata.StaticVersion} ☣{new string(' ', 52 - 22 - ModMetadata.StaticVersion.Length)}{reset}{yellow}║{reset}");
+        logger.Info($"{yellow}║{reset}{cyan}    ☣ ZSlayer SPT Zombies v{ModMetadata.StaticVersion} ☣{new string(' ', 52 - 26 - ModMetadata.StaticVersion.Length)}{reset}{yellow}║{reset}");
         logger.Info($"{yellow}╠{bar}╣{reset}");
 
         var maps = new[] { "Labs", "Customs", "Factory", "Interchange", "Lighthouse", "Reserve", "GroundZero", "Shoreline", "Streets", "Woods" };

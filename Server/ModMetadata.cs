@@ -7,7 +7,7 @@ public record ModMetadata : AbstractModMetadata
     public const string StaticVersion = "1.0.0";
 
     public override string ModGuid { get; init; } = "com.zslayerhq.zombies";
-    public override string Name { get; init; } = "ZSlayer Zombies";
+    public override string Name { get; init; } = "ZSlayer SPT Zombies";
     public override string Author { get; init; } = "ZSlayer";
     public override List<string>? Contributors { get; init; }
     public override SemanticVersioning.Version Version { get; init; } = new(StaticVersion);

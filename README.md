@@ -1,4 +1,4 @@
-# ZSlayer Zombies
+# ZSlayer SPT Zombies
 
 ![Version](https://img.shields.io/badge/Version-v1.0.0-gold?style=flat-square)
 ![SPT](https://img.shields.io/badge/SPT-~4.0.x-blue?style=flat-square)
@@ -30,7 +30,7 @@ Vanilla EFT zombies are boring. They have exactly three modes:
 
 All three modes do the same thing: walk at you, melee at 4 meters. No variety, no surprise, no fear.
 
-ZSlayer Zombies replaces the vanilla zombie brain entirely using **BigBrain**. When an infected bot spawns, the plugin:
+ZSlayer SPT Zombies replaces the vanilla zombie brain entirely using **BigBrain**. When an infected bot spawns, the plugin:
 1. Detects it via WildSpawnType (infectedAssault, infectedPmc, infectedCivil, infectedLaborant, infectedTagilla)
 2. Assigns a **behavior archetype** based on weighted random selection (deterministic per ProfileId for FIKA sync)
 3. Registers custom BigBrain layers that override vanilla decision-making
