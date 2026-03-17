@@ -1,9 +1,10 @@
 # ZSlayer SPT Zombies
 
-![Version](https://img.shields.io/badge/Version-v1.0.0-gold?style=flat-square)
+![Version](https://img.shields.io/badge/Version-v1.0.0-c8aa6e?style=flat-square)
 ![SPT](https://img.shields.io/badge/SPT-~4.0.x-blue?style=flat-square)
 ![BigBrain](https://img.shields.io/badge/BigBrain-Required-red?style=flat-square)
 ![SAIN](https://img.shields.io/badge/SAIN-Optional-green?style=flat-square)
+![Command Center](https://img.shields.io/badge/Command_Center-Optional-green?style=flat-square)
 
 A comprehensive zombie overhaul for SPT 4.0 / FIKA. Replaces vanilla zombie behavior with rich, varied archetypes — shamblers that stumble through doorways, runners that sprint in terrifying bursts, crawlers that hug walls, stalkers that flank from behind, and berserkers that never stop coming.
 
@@ -272,12 +273,30 @@ All settings are live-adjustable via REST API at `/zslayer/zombies/`:
 
 ---
 
+## Command Center Integration
+
+When [ZSlayer Command Center](https://github.com/ZSlayerHQ/ZSlayerCommandCenter) is installed on the same server, it **auto-detects** ZSlayer Zombies and adds a dedicated **Zombies** tab to the admin panel. This gives you full browser-based control over every zombie setting without touching config files:
+
+- Adjust per-map infection rates with sliders
+- Tune zombie AI parameters (sight, hearing, aggression, reaction time)
+- Configure spawn weights, boss zombies, and health pools
+- Enable/disable infection effects, night mode, wave escalation
+- Adjust loot modifiers and XP rewards
+- All changes apply live — no server restart needed
+
+Command Center proxies requests through its own API (`/zslayer/cc/zombies/*`) to the zombie mod's HTTP listener (`/zslayer/zombies/*`), so everything is managed from a single browser tab alongside all your other server settings.
+
+> Command Center is optional — ZSlayer Zombies works perfectly fine standalone with its JSON config file.
+
+---
+
 ## Installation
 
 ### Requirements
 - SPT ~4.0.x
 - [BigBrain](https://hub.sp-tarkov.com/files/file/104-bigbrain/) (required)
 - [SAIN](https://hub.sp-tarkov.com/files/file/1062-sain-solarint-s-ai-modifications/) (optional, enables fear system)
+- [ZSlayer Command Center](https://github.com/ZSlayerHQ/ZSlayerCommandCenter) (optional, enables browser-based config UI)
 
 ### Server Mod
 Copy `ZSlayerZombies/` folder to `SPT/user/mods/ZSlayerZombies/`

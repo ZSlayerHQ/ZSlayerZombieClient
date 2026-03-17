@@ -11,7 +11,7 @@ using ZSlayerZombieClient.Layers;
 
 namespace ZSlayerZombieClient;
 
-[BepInPlugin("com.zslayerhq.zombieclient", "ZSlayer SPT Zombies", "0.1.0")]
+[BepInPlugin("com.zslayerhq.zombieclient", "ZSlayer SPT Zombies", "1.0.0")]
 [BepInDependency("xyz.drakia.bigbrain", BepInDependency.DependencyFlags.HardDependency)]
 [BepInDependency("me.sol.sain", BepInDependency.DependencyFlags.SoftDependency)]
 public class Plugin : BaseUnityPlugin
