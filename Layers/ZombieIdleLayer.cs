@@ -7,6 +7,8 @@ namespace ZSlayerZombieClient.Layers;
 
 public class ZombieIdleLayer : CustomLayer
 {
+    private static bool _loggedActivation;
+
     public ZombieIdleLayer(BotOwner botOwner, int priority) : base(botOwner, priority) { }
 
     public override string GetName() => "ZSlayerZombieIdle";
@@ -15,6 +17,14 @@ public class ZombieIdleLayer : CustomLayer
     {
         // Ensure zombie is registered on first check
         ZombieRegistry.GetOrRegister(BotOwner);
+
+        // Log first activation
+        if (!_loggedActivation)
+        {
+            _loggedActivation = true;
+            Plugin.Log.LogInfo("[ZSlayerHQ] ZombieIdleLayer ACTIVATED — BigBrain idle layer is working");
+        }
+
         return true;
     }
 

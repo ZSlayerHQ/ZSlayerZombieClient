@@ -6,12 +6,18 @@ using ZSlayerZombieClient.Core;
 
 namespace ZSlayerZombieClient.Logic;
 
+/// <summary>
+/// Ambient wandering when no enemies detected.
+/// Slow shuffle with random pauses — atmospheric dread.
+/// Occasional head tilts and groaning for atmosphere.
+/// </summary>
 public class IdleWanderLogic : CustomLogic
 {
     private Vector3 _wanderTarget;
     private float _nextWanderTime;
     private float _pauseEndTime;
     private bool _isPaused;
+    private float _nextLookTime;
 
     private const float WanderRadius = 15f;
     private const float ArrivalDistance = 2f;
@@ -25,14 +31,25 @@ public class IdleWanderLogic : CustomLogic
         BotOwner.Mover.SetPose(1f);
         _nextWanderTime = 0f;
         _isPaused = false;
-
-        try { BotOwner.WeaponManager?.Selector?.ChangeToMelee(); }
-        catch { }
+        _nextLookTime = 0f;
     }
 
     public override void Update(CustomLayer.ActionData data)
     {
         float time = Time.time;
+
+        // Occasional random head movement (looking around)
+        if (time >= _nextLookTime)
+        {
+            _nextLookTime = time + Random.Range(2f, 6f);
+            try
+            {
+                var lookDir = BotOwner.Position + Random.insideUnitSphere * 10f;
+                lookDir.y = BotOwner.Position.y;
+                BotOwner.Steering?.LookToPoint(lookDir);
+            }
+            catch { }
+        }
 
         // Paused at destination
         if (_isPaused)
@@ -47,9 +64,13 @@ public class IdleWanderLogic : CustomLogic
             PickNewWanderTarget();
         }
 
-        // Ambient groaning
+        // Ambient groaning — quiet, atmospheric
         if (Random.value < 0.002f)
             BotOwner.BotTalk?.Say(EPhraseTrigger.OnMutter);
+
+        // Occasional deep breath
+        if (Random.value < 0.0005f)
+            BotOwner.BotTalk?.Say(EPhraseTrigger.OnBreath);
     }
 
     private bool HasArrived()

@@ -5,13 +5,23 @@ using ZSlayerZombieClient.Core;
 
 namespace ZSlayerZombieClient.Logic;
 
+/// <summary>
+/// Slow, shambling zombie. Erratic movement with stumbles and pauses.
+/// Creates tension through unpredictability — false pauses that lull you
+/// into thinking they stopped, then sudden lurches forward.
+/// Head always locked on the player. Vocalizations increase as they close in.
+/// </summary>
 public class ShamblerLogic : CustomLogic
 {
     private float _nextPathTime;
     private float _nextStumbleTime;
+    private float _nextLookTime;
     private bool _isStumbling;
     private float _stumbleEndTime;
     private float _speed;
+    private bool _isLunging;
+    private float _lungeEndTime;
+    private float _lastDistance;
 
     public ShamblerLogic(BotOwner botOwner) : base(botOwner) { }
 
@@ -26,9 +36,9 @@ public class ShamblerLogic : CustomLogic
         _nextStumbleTime = Time.time + Random.Range(
             ZombieConstants.StumbleMinInterval, ZombieConstants.StumbleMaxInterval);
         _nextPathTime = 0f;
-
-        try { BotOwner.WeaponManager?.Selector?.ChangeToMelee(); }
-        catch { /* Some bots may not have melee */ }
+        _nextLookTime = 0f;
+        _isLunging = false;
+        _lastDistance = 999f;
     }
 
     public override void Update(CustomLayer.ActionData data)
@@ -37,11 +47,47 @@ public class ShamblerLogic : CustomLogic
         if (enemy == null) return;
 
         float time = Time.time;
+        var targetPos = enemy.CurrPosition;
+        float distance = (BotOwner.Position - targetPos).magnitude;
 
-        // Stumble mechanic — random pauses for shambling effect
+        // Head tracking — always stare at the player (creepy)
+        if (time >= _nextLookTime)
+        {
+            _nextLookTime = time + ZombieConstants.LookUpdateInterval;
+            try { BotOwner.Steering?.LookToPoint(targetPos); }
+            catch { }
+        }
+
+        // Lunge state (close-range burst)
+        if (_isLunging)
+        {
+            if (time >= _lungeEndTime)
+            {
+                _isLunging = false;
+                BotOwner.Mover.Sprint(false);
+                BotOwner.Mover.SetTargetMoveSpeed(_speed);
+            }
+            else
+            {
+                // During lunge: sprint directly at target
+                if (time >= _nextPathTime)
+                {
+                    _nextPathTime = time + ZombieConstants.FastPathUpdateInterval;
+                    BotOwner.Mover.GoToPoint(targetPos, false, 0.5f);
+                }
+                return;
+            }
+        }
+
+        // Stumble mechanic — random pauses create false sense of safety
         if (_isStumbling)
         {
-            if (time < _stumbleEndTime) return;
+            if (time < _stumbleEndTime)
+            {
+                // During stumble: still look at player (menacing stare while paused)
+                return;
+            }
+
             _isStumbling = false;
             _speed = Random.Range(
                 Plugin.ClientConfig.ShamblerMinSpeed.Value,
@@ -49,44 +95,77 @@ public class ShamblerLogic : CustomLogic
             BotOwner.Mover.SetTargetMoveSpeed(_speed);
             _nextStumbleTime = time + Random.Range(
                 ZombieConstants.StumbleMinInterval, ZombieConstants.StumbleMaxInterval);
+
+            // 20% chance: lurch forward after stumble (scary burst)
+            if (distance < ZombieConstants.LungeDistance * 2f && Random.value < 0.2f)
+            {
+                _speed = Mathf.Min(_speed + 0.2f, 0.8f);
+                BotOwner.Mover.SetTargetMoveSpeed(_speed);
+            }
         }
 
-        if (time >= _nextStumbleTime)
+        if (time >= _nextStumbleTime && !_isLunging)
         {
             _isStumbling = true;
-            _stumbleEndTime = time + Random.Range(
-                ZombieConstants.StumbleMinDuration, ZombieConstants.StumbleMaxDuration);
+            // Longer stumbles at distance (patient), shorter up close (urgent)
+            float stumbleDuration = distance > 15f
+                ? Random.Range(1f, 2.5f)
+                : Random.Range(ZombieConstants.StumbleMinDuration, ZombieConstants.StumbleMaxDuration);
+            _stumbleEndTime = time + stumbleDuration;
             BotOwner.Mover.SetTargetMoveSpeed(0.05f);
             return;
         }
 
-        // Vocalize
-        if (Random.value < ZombieConstants.VocalizationChance)
-            BotOwner.BotTalk?.Say(EPhraseTrigger.OnEnemyConversation);
+        // Vocalize — frequency increases as zombie gets closer
+        float vocChance = ZombieConstants.VocalizationChance;
+        if (distance < 10f) vocChance *= 3f;
+        else if (distance < 20f) vocChance *= 2f;
+        if (Random.value < vocChance)
+        {
+            var trigger = distance < 5f ? EPhraseTrigger.OnFight : EPhraseTrigger.OnEnemyConversation;
+            BotOwner.BotTalk?.Say(trigger);
+        }
 
         // Update path periodically
         if (time < _nextPathTime) return;
         _nextPathTime = time + ZombieConstants.PathUpdateInterval;
 
-        var targetPos = enemy.CurrPosition;
-        float distance = (BotOwner.Position - targetPos).magnitude;
+        // Trigger lunge when entering close range
+        if (distance < ZombieConstants.LungeDistance && _lastDistance >= ZombieConstants.LungeDistance)
+        {
+            _isLunging = true;
+            _lungeEndTime = time + ZombieConstants.LungeDuration;
+            BotOwner.Mover.Sprint(true);
+            BotOwner.Mover.SetTargetMoveSpeed(1f);
+            BotOwner.BotTalk?.Say(EPhraseTrigger.OnFight);
+            _lastDistance = distance;
+            BotOwner.Mover.GoToPoint(targetPos, false, 0.5f);
+            return;
+        }
+
+        _lastDistance = distance;
 
         if (distance > 4f)
         {
-            // Erratic offset for shambling effect
-            var offset = new Vector3(Random.Range(-1.5f, 1.5f), 0, Random.Range(-1.5f, 1.5f));
+            // Erratic lateral offset — shambling gait, not a straight line
+            var offset = new Vector3(
+                Random.Range(-1.5f, 1.5f),
+                0,
+                Random.Range(-1.5f, 1.5f));
             BotOwner.Mover.GoToPoint(targetPos + offset, false, 1f);
         }
         else
         {
-            // Close range — direct approach for melee
-            BotOwner.Mover.SetTargetMoveSpeed(_speed + 0.15f);
-            BotOwner.Mover.GoToPoint(targetPos, false, 0.5f);
+            // Very close — direct aggressive approach
+            BotOwner.Mover.SetTargetMoveSpeed(Mathf.Min(_speed + ZombieConstants.LungeSpeedBoost, 0.9f));
+            BotOwner.Mover.GoToPoint(targetPos, false, 0.3f);
         }
     }
 
     public override void Stop()
     {
         _isStumbling = false;
+        _isLunging = false;
+        BotOwner.Mover.Sprint(false);
     }
 }

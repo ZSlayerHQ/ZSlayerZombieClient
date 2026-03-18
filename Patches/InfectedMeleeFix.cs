@@ -15,10 +15,15 @@ namespace ZSlayerZombieClient.Patches;
 /// to true for infected bots, restoring vanilla melee behavior.
 ///
 /// When SAIN is not installed, __runOriginal is already true — this is a no-op.
+///
+/// Zombies use hands-based melee (no weapon needed). RunToEnemyUpdate handles
+/// the approach + attack animation trigger for zombie bots automatically.
 /// </summary>
 [HarmonyPatch(typeof(BotMeleeWeaponData), nameof(BotMeleeWeaponData.RunToEnemyUpdate))]
 public class InfectedMeleeFix
 {
+    private static bool _loggedOnce;
+
     [HarmonyAfter("me.sol.sain")]
     [HarmonyPrefix]
     public static void Prefix(BotMeleeWeaponData __instance, ref bool __runOriginal)
@@ -31,6 +36,13 @@ public class InfectedMeleeFix
         if (botOwner != null && ZombieIdentifier.IsInfected(botOwner))
         {
             __runOriginal = true;
+
+            // Log once to confirm the fix is working
+            if (!_loggedOnce)
+            {
+                _loggedOnce = true;
+                Plugin.Log.LogInfo("[ZSlayerHQ] InfectedMeleeFix: restored RunToEnemyUpdate for infected bot (SAIN override active)");
+            }
         }
     }
 }
