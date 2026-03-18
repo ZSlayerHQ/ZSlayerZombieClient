@@ -10,6 +10,7 @@ public class ZombieClientConfig
     public ConfigEntry<int> CrawlerWeight { get; }
     public ConfigEntry<int> StalkerWeight { get; }
     public ConfigEntry<int> BerserkerWeight { get; }
+    public ConfigEntry<int> WraithWeight { get; }
 
     // Movement
     public ConfigEntry<float> ShamblerMinSpeed { get; }
@@ -27,9 +28,10 @@ public class ZombieClientConfig
     {
         ShamblerWeight = config.Bind("Archetypes", "ShamblerWeight", 40, "Weight for Shambler archetype");
         RunnerWeight = config.Bind("Archetypes", "RunnerWeight", 25, "Weight for Runner archetype");
-        CrawlerWeight = config.Bind("Archetypes", "CrawlerWeight", 10, "Weight for Crawler archetype (Phase 2)");
-        StalkerWeight = config.Bind("Archetypes", "StalkerWeight", 15, "Weight for Stalker archetype (Phase 2)");
-        BerserkerWeight = config.Bind("Archetypes", "BerserkerWeight", 10, "Weight for Berserker archetype (Phase 2)");
+        CrawlerWeight = config.Bind("Archetypes", "CrawlerWeight", 10, "Weight for Crawler archetype — slow lurker, surprise burst");
+        StalkerWeight = config.Bind("Archetypes", "StalkerWeight", 15, "Weight for Stalker archetype — crouched flanker, tactical");
+        BerserkerWeight = config.Bind("Archetypes", "BerserkerWeight", 10, "Weight for Berserker archetype");
+        WraithWeight = config.Bind("Archetypes", "WraithWeight", 5, "Weight for Wraith archetype — sneaks up silently, flees when spotted");
 
         ShamblerMinSpeed = config.Bind("Movement", "ShamblerMinSpeed", 0.3f, "Shambler minimum move speed (0-1)");
         ShamblerMaxSpeed = config.Bind("Movement", "ShamblerMaxSpeed", 0.5f, "Shambler maximum move speed (0-1)");

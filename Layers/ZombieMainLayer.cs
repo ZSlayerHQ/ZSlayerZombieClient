@@ -46,6 +46,7 @@ public class ZombieMainLayer : CustomLayer
             ZombieArchetype.Berserker => typeof(BerserkerLogic),
             ZombieArchetype.Stalker => typeof(StalkerLogic),
             ZombieArchetype.Crawler => typeof(CrawlerLogic),
+            ZombieArchetype.Wraith => typeof(WraithLogic),
             _ => typeof(ShamblerLogic),
         };
 

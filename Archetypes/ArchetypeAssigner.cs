@@ -36,6 +36,7 @@ public class ArchetypeAssigner
             (_config.CrawlerWeight.Value, ArchetypeData.Crawler),
             (_config.StalkerWeight.Value, ArchetypeData.Stalker),
             (_config.BerserkerWeight.Value, ArchetypeData.Berserker),
+            (_config.WraithWeight.Value, ArchetypeData.Wraith),
         };
 
         int total = 0;
