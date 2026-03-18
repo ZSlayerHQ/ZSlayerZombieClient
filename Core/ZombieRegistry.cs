@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using EFT;
+using UnityEngine;
 using ZSlayerZombieClient.Archetypes;
 
 namespace ZSlayerZombieClient.Core;
@@ -42,6 +44,12 @@ public static class ZombieRegistry
 
     public static int Count => _zombies.Count;
     public static void Clear() => _zombies.Clear();
+
+    /// <summary>
+    /// Returns all registered zombie entries. Used by HordeManager for spatial grouping.
+    /// Snapshot of values — safe to iterate while registry is modified.
+    /// </summary>
+    public static ICollection<ZombieEntry> GetAll() => _zombies.Values;
 }
 
 public class ZombieEntry
@@ -50,6 +58,13 @@ public class ZombieEntry
     public ArchetypeData Archetype { get; }
     public AlertState Alert { get; set; } = AlertState.Unaware;
     public float LastAlertTime { get; set; }
+
+    // Horde coordination state
+    public Vector3? HordeTargetPosition { get; set; }
+    public float HordeTargetTime { get; set; }
+    public bool IsAlpha { get; set; }
+    public bool IsRushing { get; set; }
+    public float RushEndTime { get; set; }
 
     /// <summary>
     /// Per-zombie speed multiplier (0.8 - 1.3). Seeded from ProfileId

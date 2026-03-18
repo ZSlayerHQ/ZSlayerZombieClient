@@ -58,6 +58,10 @@ public class CrawlerLogic : CustomLogic
         if (ZombieMelee.TryMeleeAttack(BotOwner, distance))
             return;
 
+        // Horde rush overrides archetype behavior
+        if (ZombieRush.HandleRush(BotOwner, distance))
+            return;
+
         // Head tracking — stare at player from prone
         if (time >= _nextLookTime)
         {

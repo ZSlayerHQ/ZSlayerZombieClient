@@ -62,6 +62,10 @@ public class ShamblerLogic : CustomLogic
         if (ZombieMelee.TryMeleeAttack(BotOwner, distance))
             return;
 
+        // Horde rush overrides archetype behavior
+        if (ZombieRush.HandleRush(BotOwner, distance))
+            return;
+
         // Head tracking — always stare at the player (creepy)
         if (time >= _nextLookTime)
         {

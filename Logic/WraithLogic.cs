@@ -73,6 +73,10 @@ public class WraithLogic : CustomLogic
         if (ZombieMelee.TryMeleeAttack(BotOwner, distance))
             return;
 
+        // Horde rush overrides archetype behavior
+        if (ZombieRush.HandleRush(BotOwner, distance))
+            return;
+
         // If we're extremely close, commit to melee — no more games
         if (distance < CommitDistance && _state != WraithState.Fleeing)
         {

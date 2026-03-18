@@ -53,6 +53,10 @@ public class StalkerLogic : CustomLogic
         if (ZombieMelee.TryMeleeAttack(BotOwner, distance))
             return;
 
+        // Horde rush overrides archetype behavior
+        if (ZombieRush.HandleRush(BotOwner, distance))
+            return;
+
         // Head tracking — always watching
         if (time >= _nextLookTime)
         {

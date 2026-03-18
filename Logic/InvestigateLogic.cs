@@ -32,29 +32,43 @@ public class InvestigateLogic : CustomLogic
         _reachedTarget = false;
         _lookAngle = 0f;
 
-        // Try to get last known enemy position
-        var enemy = BotOwner.Memory.GoalEnemy;
-        if (enemy != null)
+        // Determine investigation target (priority: horde target > enemy > random)
+        bool hasHordeTarget = false;
+        if (ZombieRegistry.TryGet(BotOwner, out var regEntry) && regEntry.HordeTargetPosition.HasValue)
         {
-            _investigatePos = enemy.CurrPosition;
+            _investigatePos = regEntry.HordeTargetPosition.Value;
+            hasHordeTarget = true;
         }
         else
         {
-            // No enemy data — investigate nearby area
-            var randomDir = Random.insideUnitSphere * 20f;
-            randomDir.y = 0;
-            var candidate = BotOwner.Position + randomDir;
-            if (NavMesh.SamplePosition(candidate, out var hit, 5f, NavMesh.AllAreas))
-                _investigatePos = hit.position;
+            var enemy = BotOwner.Memory.GoalEnemy;
+            if (enemy != null)
+            {
+                _investigatePos = enemy.CurrPosition;
+            }
             else
-                _investigatePos = BotOwner.Position + BotOwner.LookDirection * 10f;
+            {
+                // No enemy data — investigate nearby area
+                var randomDir = Random.insideUnitSphere * 20f;
+                randomDir.y = 0;
+                var candidate = BotOwner.Position + randomDir;
+                if (NavMesh.SamplePosition(candidate, out var hit, 5f, NavMesh.AllAreas))
+                    _investigatePos = hit.position;
+                else
+                    _investigatePos = BotOwner.Position + BotOwner.LookDirection * 10f;
+            }
         }
 
-        // Alert growl
+        // Alert growl — louder if horde-directed
         BotOwner.BotTalk?.Say(EPhraseTrigger.OnEnemyConversation);
 
+        // Move faster toward horde targets (group urgency)
+        if (hasHordeTarget)
+            BotOwner.Mover.SetTargetMoveSpeed(0.75f);
+
         float dist = (_investigatePos - BotOwner.Position).magnitude;
-        ZombieDebug.LogLogicStart("Investigate", BotOwner, $"target {dist:F1}m away");
+        ZombieDebug.LogLogicStart("Investigate", BotOwner,
+            $"target {dist:F1}m away{(hasHordeTarget ? " (HORDE TARGET)" : "")}");
     }
 
     public override void Update(CustomLayer.ActionData data)

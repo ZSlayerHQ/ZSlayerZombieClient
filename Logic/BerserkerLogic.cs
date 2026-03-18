@@ -48,6 +48,10 @@ public class BerserkerLogic : CustomLogic
         if (ZombieMelee.TryMeleeAttack(BotOwner, distance))
             return;
 
+        // Horde rush overrides archetype behavior (berserker is already max aggro, but rush provides target sharing)
+        if (ZombieRush.HandleRush(BotOwner, distance))
+            return;
+
         // Constant head tracking
         if (time >= _nextLookTime)
         {

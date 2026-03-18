@@ -54,6 +54,10 @@ public class RunnerLogic : CustomLogic
         if (ZombieMelee.TryMeleeAttack(BotOwner, distance))
             return;
 
+        // Horde rush overrides archetype behavior
+        if (ZombieRush.HandleRush(BotOwner, distance))
+            return;
+
         // Head tracking — always face the target
         if (time >= _nextLookTime)
         {

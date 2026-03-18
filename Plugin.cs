@@ -8,6 +8,7 @@ using HarmonyLib;
 using ZSlayerZombieClient.Archetypes;
 using ZSlayerZombieClient.Config;
 using ZSlayerZombieClient.Core;
+using ZSlayerZombieClient.Horde;
 using ZSlayerZombieClient.Layers;
 
 namespace ZSlayerZombieClient;
@@ -80,6 +81,19 @@ public class Plugin : BaseUnityPlugin
         // Apply Harmony patches
         new Harmony("com.zslayerhq.zombieclient").PatchAll();
         Log.LogInfo("[ZSlayerHQ] Harmony patches applied (InfectedMeleeFix, BotSpawnPatch)");
+
+        // Create HordeManager MonoBehaviour
+        if (ClientConfig.HordeEnabled.Value)
+        {
+            var hordeGo = new UnityEngine.GameObject("ZSlayerHordeManager");
+            UnityEngine.Object.DontDestroyOnLoad(hordeGo);
+            hordeGo.AddComponent<HordeManager>();
+            Log.LogInfo("[ZSlayerHQ] HordeManager created (horde coordination active)");
+        }
+        else
+        {
+            Log.LogInfo("[ZSlayerHQ] Horde coordination disabled via config");
+        }
     }
 
     /// <summary>

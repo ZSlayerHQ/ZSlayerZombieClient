@@ -21,6 +21,15 @@ public class ZombieClientConfig
     // Brain
     public ConfigEntry<string> InfectedBrainNames { get; }
 
+    // Horde
+    public ConfigEntry<bool> HordeEnabled { get; }
+    public ConfigEntry<float> HordeGroupRadius { get; }
+    public ConfigEntry<float> HordeAlertRadius { get; }
+    public ConfigEntry<int> HordeRushMinCount { get; }
+    public ConfigEntry<float> HordeRushDistance { get; }
+    public ConfigEntry<float> HordeRushDuration { get; }
+    public ConfigEntry<float> HordeTickRate { get; }
+
     // Debug
     public ConfigEntry<bool> DebugLogging { get; }
 
@@ -40,6 +49,14 @@ public class ZombieClientConfig
 
         InfectedBrainNames = config.Bind("Brain", "InfectedBrainNames", "InfectedSlow,InfectedFast,InfectedShooting",
             "Comma-separated brain names for infected bots (may change between SPT versions)");
+
+        HordeEnabled = config.Bind("Horde", "Enabled", true, "Enable horde coordination (alert spreading, alpha election, rush attacks)");
+        HordeGroupRadius = config.Bind("Horde", "GroupRadius", 30f, "Max distance between zombies to be considered part of the same group");
+        HordeAlertRadius = config.Bind("Horde", "AlertRadius", 20f, "Radius within which an aggressive zombie alerts unaware ones");
+        HordeRushMinCount = config.Bind("Horde", "RushMinCount", 4, "Minimum group size to trigger a coordinated rush attack");
+        HordeRushDistance = config.Bind("Horde", "RushDistance", 30f, "Max target distance to trigger rush (closer = more likely)");
+        HordeRushDuration = config.Bind("Horde", "RushDuration", 10f, "Duration of rush attack in seconds");
+        HordeTickRate = config.Bind("Horde", "TickRate", 0.5f, "Seconds between horde system updates (lower = more responsive but more CPU)");
 
         DebugLogging = config.Bind("Debug", "DebugLogging", true, "Enable verbose debug logging (disable for production)");
     }
