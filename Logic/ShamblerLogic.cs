@@ -22,15 +22,21 @@ public class ShamblerLogic : CustomLogic
     private bool _isLunging;
     private float _lungeEndTime;
     private float _lastDistance;
+    private float _speedMul;
 
     public ShamblerLogic(BotOwner botOwner) : base(botOwner) { }
 
     public override void Start()
     {
+        // Get per-zombie speed multiplier for variance
+        _speedMul = 1f;
+        if (ZombieRegistry.TryGet(BotOwner, out var entry))
+            _speedMul = entry.SpeedMultiplier;
+
         BotOwner.Mover.Sprint(false);
-        _speed = Random.Range(
-            Plugin.ClientConfig.ShamblerMinSpeed.Value,
-            Plugin.ClientConfig.ShamblerMaxSpeed.Value);
+        _speed = ZombieHelper.ApplySpeedVariance(
+            Random.Range(Plugin.ClientConfig.ShamblerMinSpeed.Value, Plugin.ClientConfig.ShamblerMaxSpeed.Value),
+            _speedMul);
         BotOwner.Mover.SetTargetMoveSpeed(_speed);
         BotOwner.Mover.SetPose(1f);
         _nextStumbleTime = Time.time + Random.Range(
@@ -89,9 +95,9 @@ public class ShamblerLogic : CustomLogic
             }
 
             _isStumbling = false;
-            _speed = Random.Range(
-                Plugin.ClientConfig.ShamblerMinSpeed.Value,
-                Plugin.ClientConfig.ShamblerMaxSpeed.Value);
+            _speed = ZombieHelper.ApplySpeedVariance(
+                Random.Range(Plugin.ClientConfig.ShamblerMinSpeed.Value, Plugin.ClientConfig.ShamblerMaxSpeed.Value),
+                _speedMul);
             BotOwner.Mover.SetTargetMoveSpeed(_speed);
             _nextStumbleTime = time + Random.Range(
                 ZombieConstants.StumbleMinInterval, ZombieConstants.StumbleMaxInterval);
@@ -116,8 +122,8 @@ public class ShamblerLogic : CustomLogic
             return;
         }
 
-        // Vocalize — frequency increases as zombie gets closer
-        float vocChance = ZombieConstants.VocalizationChance;
+        // Vocalize — frequency increases as zombie gets closer, reduced when far
+        float vocChance = ZombieConstants.VocalizationChance * ZombieHelper.GetVocalizationMultiplier(distance);
         if (distance < 10f) vocChance *= 3f;
         else if (distance < 20f) vocChance *= 2f;
         if (Random.value < vocChance)
@@ -126,9 +132,9 @@ public class ShamblerLogic : CustomLogic
             BotOwner.BotTalk?.Say(trigger);
         }
 
-        // Update path periodically
+        // Update path — distance-based throttling for performance
         if (time < _nextPathTime) return;
-        _nextPathTime = time + ZombieConstants.PathUpdateInterval;
+        _nextPathTime = time + ZombieHelper.GetPathInterval(distance);
 
         // Trigger lunge when entering close range
         if (distance < ZombieConstants.LungeDistance && _lastDistance >= ZombieConstants.LungeDistance)

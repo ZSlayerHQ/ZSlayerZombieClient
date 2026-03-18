@@ -19,11 +19,16 @@ public class RunnerLogic : CustomLogic
     private bool _isSprinting;
     private float _zigzagOffset;
     private float _zigzagTimer;
+    private float _speedMul;
 
     public RunnerLogic(BotOwner botOwner) : base(botOwner) { }
 
     public override void Start()
     {
+        _speedMul = 1f;
+        if (ZombieRegistry.TryGet(BotOwner, out var entry))
+            _speedMul = entry.SpeedMultiplier;
+
         BotOwner.Mover.SetPose(1f);
         _nextLookTime = 0f;
         _zigzagOffset = 0f;
@@ -64,21 +69,20 @@ public class RunnerLogic : CustomLogic
             }
         }
 
-        // Vocalize — screaming during sprint, growling during recovery
-        float vocChance = _isSprinting
+        // Vocalize — screaming during sprint, growling during recovery (reduced when far)
+        float vocChance = (_isSprinting
             ? ZombieConstants.RunnerVocalizationChance
-            : ZombieConstants.VocalizationChance;
+            : ZombieConstants.VocalizationChance) * ZombieHelper.GetVocalizationMultiplier(distance);
         if (Random.value < vocChance)
         {
             var trigger = _isSprinting ? EPhraseTrigger.OnEnemyConversation : EPhraseTrigger.OnMutter;
             BotOwner.BotTalk?.Say(trigger);
         }
 
-        // Update path
+        // Update path — distance-based throttling for performance
         if (time < _nextPathTime) return;
-        _nextPathTime = time + (_isSprinting
-            ? ZombieConstants.FastPathUpdateInterval
-            : ZombieConstants.PathUpdateInterval);
+        float baseInterval = _isSprinting ? ZombieConstants.FastPathUpdateInterval : ZombieConstants.PathUpdateInterval;
+        _nextPathTime = time + (distance > 50f ? baseInterval * 3f : distance > 20f ? baseInterval * 1.5f : baseInterval);
 
         if (distance > 4f)
         {
@@ -121,7 +125,7 @@ public class RunnerLogic : CustomLogic
             Plugin.ClientConfig.RunnerSprintDuration.Value +
             Random.Range(-1f, 1.5f);
         BotOwner.Mover.Sprint(true);
-        BotOwner.Mover.SetTargetMoveSpeed(1f);
+        BotOwner.Mover.SetTargetMoveSpeed(ZombieHelper.ApplySpeedVariance(1f, _speedMul));
     }
 
     private void StartRecoveryPhase()
@@ -132,6 +136,6 @@ public class RunnerLogic : CustomLogic
             Plugin.ClientConfig.RunnerRecoveryDuration.Value +
             Random.Range(-0.5f, 1f);
         BotOwner.Mover.Sprint(false);
-        BotOwner.Mover.SetTargetMoveSpeed(0.6f);
+        BotOwner.Mover.SetTargetMoveSpeed(ZombieHelper.ApplySpeedVariance(0.6f, _speedMul));
     }
 }

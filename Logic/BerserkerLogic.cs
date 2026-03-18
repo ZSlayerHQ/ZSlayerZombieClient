@@ -57,13 +57,13 @@ public class BerserkerLogic : CustomLogic
             BotOwner.BotTalk?.Say(EPhraseTrigger.OnFight);
         }
 
-        // Continuous vocalization between screams
-        if (Random.value < ZombieConstants.BerserkerVocalizationChance)
+        // Continuous vocalization between screams (reduced when far)
+        if (Random.value < ZombieConstants.BerserkerVocalizationChance * ZombieHelper.GetVocalizationMultiplier(distance))
             BotOwner.BotTalk?.Say(EPhraseTrigger.OnEnemyConversation);
 
-        // Path update — tightest tracking of all archetypes
+        // Path update — tightest tracking, distance-throttled for performance
         if (time < _nextPathTime) return;
-        _nextPathTime = time + ZombieConstants.BerserkerPathUpdateInterval;
+        _nextPathTime = time + (distance > 50f ? 1f : distance > 20f ? 0.4f : ZombieConstants.BerserkerPathUpdateInterval);
 
         if (distance > 3f)
         {

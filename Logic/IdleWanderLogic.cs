@@ -8,8 +8,9 @@ namespace ZSlayerZombieClient.Logic;
 
 /// <summary>
 /// Ambient wandering when no enemies detected.
-/// Slow shuffle with random pauses — atmospheric dread.
-/// Occasional head tilts and groaning for atmosphere.
+/// Zombies are restless — they shamble around at a moderate pace,
+/// not standing still like statues. Occasional pauses to look around
+/// but they keep moving. Speed varies per zombie.
 /// </summary>
 public class IdleWanderLogic : CustomLogic
 {
@@ -18,16 +19,22 @@ public class IdleWanderLogic : CustomLogic
     private float _pauseEndTime;
     private bool _isPaused;
     private float _nextLookTime;
+    private float _speedMul;
 
-    private const float WanderRadius = 15f;
+    private const float WanderRadius = 20f;
     private const float ArrivalDistance = 2f;
 
     public IdleWanderLogic(BotOwner botOwner) : base(botOwner) { }
 
     public override void Start()
     {
+        _speedMul = 1f;
+        if (ZombieRegistry.TryGet(BotOwner, out var entry))
+            _speedMul = entry.SpeedMultiplier;
+
         BotOwner.Mover.Sprint(false);
-        BotOwner.Mover.SetTargetMoveSpeed(0.2f);
+        // Faster idle speed — zombies are restless, not sleeping
+        BotOwner.Mover.SetTargetMoveSpeed(ZombieHelper.ApplySpeedVariance(0.4f, _speedMul));
         BotOwner.Mover.SetPose(1f);
         _nextWanderTime = 0f;
         _isPaused = false;
@@ -51,7 +58,7 @@ public class IdleWanderLogic : CustomLogic
             catch { }
         }
 
-        // Paused at destination
+        // Paused at destination — shorter pauses, more restless
         if (_isPaused)
         {
             if (time < _pauseEndTime) return;
@@ -88,22 +95,24 @@ public class IdleWanderLogic : CustomLogic
         if (NavMesh.SamplePosition(candidatePos, out var hit, 5f, NavMesh.AllAreas))
         {
             _wanderTarget = hit.position;
-            BotOwner.Mover.SetTargetMoveSpeed(Random.Range(0.15f, 0.3f));
-            BotOwner.Mover.GoToPoint(_wanderTarget, true, ArrivalDistance);
-            _nextWanderTime = Time.time + Random.Range(8f, 20f);
+            // Varied idle speed — some zombies shamble faster than others
+            BotOwner.Mover.SetTargetMoveSpeed(ZombieHelper.ApplySpeedVariance(
+                Random.Range(0.3f, 0.5f), _speedMul));
+            BotOwner.Mover.GoToPoint(_wanderTarget, false, ArrivalDistance);
+            // Shorter intervals — zombies keep moving, don't stand around
+            _nextWanderTime = Time.time + Random.Range(5f, 12f);
 
-            // Random pause chance before starting move
-            if (Random.value < 0.3f)
+            // Less frequent pauses (15% vs 30%), shorter duration
+            if (Random.value < 0.15f)
             {
                 _isPaused = true;
-                _pauseEndTime = Time.time + Random.Range(3f, 8f);
+                _pauseEndTime = Time.time + Random.Range(1.5f, 4f);
             }
         }
         else
         {
-            // Failed to find valid point — wait and retry
             _isPaused = true;
-            _pauseEndTime = Time.time + Random.Range(2f, 5f);
+            _pauseEndTime = Time.time + Random.Range(1f, 3f);
             _nextWanderTime = _pauseEndTime;
         }
     }
