@@ -52,6 +52,9 @@ public class InvestigateLogic : CustomLogic
 
         // Alert growl
         BotOwner.BotTalk?.Say(EPhraseTrigger.OnEnemyConversation);
+
+        float dist = (_investigatePos - BotOwner.Position).magnitude;
+        ZombieDebug.LogLogicStart("Investigate", BotOwner, $"target {dist:F1}m away");
     }
 
     public override void Update(CustomLayer.ActionData data)
@@ -92,7 +95,11 @@ public class InvestigateLogic : CustomLogic
             {
                 // Clear alert state — return to idle
                 if (ZombieRegistry.TryGet(BotOwner, out var entry))
+                {
+                    ZombieDebug.LogStateChange("Investigate", BotOwner,
+                        entry.Alert.ToString(), "Unaware", "scan complete, returning to idle");
                     entry.Alert = AlertState.Unaware;
+                }
             }
             return;
         }
@@ -111,6 +118,7 @@ public class InvestigateLogic : CustomLogic
             _reachedTarget = true;
             _scanEndTime = time + Random.Range(4f, 8f);
             BotOwner.Mover.SetTargetMoveSpeed(0.1f);
+            ZombieDebug.LogStateChange("Investigate", BotOwner, "Approaching", "Scanning", "reached investigation point");
         }
     }
 

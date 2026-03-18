@@ -56,6 +56,8 @@ public class WraithLogic : CustomLogic
         BotOwner.Mover.Sprint(false);
         BotOwner.Mover.SetTargetMoveSpeed(0.7f);
         BotOwner.Mover.SetPose(1f);
+
+        ZombieDebug.LogLogicStart("Wraith", BotOwner, "state=Stalking");
     }
 
     public override void Update(CustomLayer.ActionData data)
@@ -114,6 +116,8 @@ public class WraithLogic : CustomLogic
             if (IsPlayerLookingAtMe(enemy, targetPos))
             {
                 // SPOTTED — freeze in shock
+                ZombieDebug.LogStateChange("Wraith", BotOwner, "Stalking", "Spotted",
+                    $"player looking at us! dist={distance:F1}m");
                 TransitionTo(WraithState.Spotted, 0.4f);
                 BotOwner.Mover.SetTargetMoveSpeed(0f);
                 return;
@@ -169,6 +173,7 @@ public class WraithLogic : CustomLogic
         if (time >= _stateEndTime)
         {
             // Transition to flee — scream and run
+            ZombieDebug.LogStateChange("Wraith", BotOwner, "Spotted", "Fleeing", "freeze ended, screaming and running");
             TransitionTo(WraithState.Fleeing, Random.Range(2.5f, 4f));
             BotOwner.BotTalk?.Say(EPhraseTrigger.OnFight); // Scream as it flees
             _hasFleeTarget = false;
@@ -217,6 +222,7 @@ public class WraithLogic : CustomLogic
         if (time >= _stateEndTime)
         {
             // Done fleeing — enter cooldown
+            ZombieDebug.LogStateChange("Wraith", BotOwner, "Fleeing", "Cooldown", $"fled to {distance:F1}m away");
             TransitionTo(WraithState.Cooldown, Random.Range(3f, 5f));
             BotOwner.Mover.Sprint(false);
             BotOwner.Mover.SetTargetMoveSpeed(0f);
@@ -239,6 +245,7 @@ public class WraithLogic : CustomLogic
         if (time >= _stateEndTime)
         {
             // Cooldown over — start stalking again
+            ZombieDebug.LogStateChange("Wraith", BotOwner, "Cooldown", "Stalking", $"resuming approach, dist={distance:F1}m");
             TransitionTo(WraithState.Stalking, 0f);
             BotOwner.Mover.SetTargetMoveSpeed(0.5f);
         }

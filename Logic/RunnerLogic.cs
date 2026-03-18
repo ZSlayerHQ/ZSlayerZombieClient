@@ -37,6 +37,8 @@ public class RunnerLogic : CustomLogic
         // Start with a scream and sprint
         BotOwner.BotTalk?.Say(EPhraseTrigger.OnFight);
         StartSprintPhase();
+
+        ZombieDebug.LogLogicStart("Runner", BotOwner);
     }
 
     public override void Update(CustomLayer.ActionData data)
@@ -121,21 +123,22 @@ public class RunnerLogic : CustomLogic
     private void StartSprintPhase()
     {
         _isSprinting = true;
-        _phaseEndTime = Time.time +
-            Plugin.ClientConfig.RunnerSprintDuration.Value +
-            Random.Range(-1f, 1.5f);
+        float duration = Plugin.ClientConfig.RunnerSprintDuration.Value + Random.Range(-1f, 1.5f);
+        _phaseEndTime = Time.time + duration;
         BotOwner.Mover.Sprint(true);
         BotOwner.Mover.SetTargetMoveSpeed(ZombieHelper.ApplySpeedVariance(1f, _speedMul));
+
+        ZombieDebug.LogStateChange("Runner", BotOwner, "Recovery", "Sprint", $"duration={duration:F1}s");
     }
 
     private void StartRecoveryPhase()
     {
         _isSprinting = false;
-        // Short recovery — they don't rest long
-        _phaseEndTime = Time.time +
-            Plugin.ClientConfig.RunnerRecoveryDuration.Value +
-            Random.Range(-0.5f, 1f);
+        float duration = Plugin.ClientConfig.RunnerRecoveryDuration.Value + Random.Range(-0.5f, 1f);
+        _phaseEndTime = Time.time + duration;
         BotOwner.Mover.Sprint(false);
         BotOwner.Mover.SetTargetMoveSpeed(ZombieHelper.ApplySpeedVariance(0.6f, _speedMul));
+
+        ZombieDebug.LogStateChange("Runner", BotOwner, "Sprint", "Recovery", $"duration={duration:F1}s");
     }
 }

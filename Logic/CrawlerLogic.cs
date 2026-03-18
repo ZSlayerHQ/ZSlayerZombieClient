@@ -41,6 +41,8 @@ public class CrawlerLogic : CustomLogic
         _lastStuckCheckPos = BotOwner.Position;
         _isStandingForObstacle = false;
         _isLunging = false;
+
+        ZombieDebug.LogLogicStart("Crawler", BotOwner, $"PRONE speed={CrawlSpeed}");
     }
 
     public override void Update(CustomLayer.ActionData data)
@@ -96,8 +98,8 @@ public class CrawlerLogic : CustomLogic
                 BotOwner.Mover.SetPose(1f);
                 BotOwner.Mover.SetTargetMoveSpeed(0.6f);
 
-                if (Plugin.ClientConfig.DebugLogging.Value)
-                    Plugin.Log.LogInfo("[ZSlayerHQ] Crawler stuck — standing to navigate obstacle");
+                ZombieDebug.LogStateChange("Crawler", BotOwner, "Prone", "Standing",
+                    $"stuck (moved {movedDist:F2}m in {StuckCheckInterval}s, dist={distance:F1}m)");
             }
         }
 
@@ -139,6 +141,7 @@ public class CrawlerLogic : CustomLogic
             BotOwner.Mover.SetTargetMoveSpeed(1f);
             BotOwner.BotTalk?.Say(EPhraseTrigger.OnFight);
             BotOwner.Mover.GoToPoint(targetPos, false, 0.3f);
+            ZombieDebug.LogCombatEvent("Crawler", BotOwner, "STAND-UP LUNGE", distance);
         }
     }
 

@@ -12,11 +12,14 @@ namespace ZSlayerZombieClient.Patches;
 public class BotSpawnPatch
 {
     private static bool _firstSpawnLogged;
+    private static int _infectedSpawnCount;
 
     [HarmonyPostfix]
     public static void Postfix(BotOwner __instance)
     {
         if (!ZombieIdentifier.IsInfected(__instance)) return;
+
+        _infectedSpawnCount++;
 
         // Register zombie (lazy — may already be registered via layer activation)
         var entry = ZombieRegistry.GetOrRegister(__instance);
@@ -31,14 +34,28 @@ public class BotSpawnPatch
             if (!_firstSpawnLogged)
             {
                 _firstSpawnLogged = true;
-                Plugin.Log.LogWarning($"[ZSlayerHQ] First infected bot brain detected: '{brainName}' (role={role}, archetype={entry.Archetype.Type})");
+                Plugin.Log.LogWarning($"[ZSlayerHQ] ========================================");
+                Plugin.Log.LogWarning($"[ZSlayerHQ] FIRST INFECTED BOT SPAWNED");
+                Plugin.Log.LogWarning($"[ZSlayerHQ]   Brain: '{brainName}'");
+                Plugin.Log.LogWarning($"[ZSlayerHQ]   Role: {role}");
+                Plugin.Log.LogWarning($"[ZSlayerHQ]   Archetype: {entry.Archetype.Type}");
+                Plugin.Log.LogWarning($"[ZSlayerHQ]   SpeedMul: {entry.SpeedMultiplier:F2}x");
+                Plugin.Log.LogWarning($"[ZSlayerHQ]   ProfileId: {ZombieDebug.BotId(__instance)}");
+                Plugin.Log.LogWarning($"[ZSlayerHQ] ========================================");
 
                 // Trigger runtime re-registration if brain name doesn't match
                 Plugin.OnInfectedBrainDetected(brainName);
             }
-            else if (Plugin.ClientConfig.DebugLogging.Value)
+            else
             {
-                Plugin.Log.LogInfo($"[ZSlayerHQ] Infected spawn: role={role}, brain='{brainName}', archetype={entry.Archetype.Type}");
+                // Always log spawns (not just in debug) for now — we need visibility
+                Plugin.Log.LogInfo($"[ZSlayerHQ] Infected #{_infectedSpawnCount}: role={role} brain='{brainName}' archetype={entry.Archetype.Type} speed={entry.SpeedMultiplier:F2}x id={ZombieDebug.BotId(__instance)}");
+            }
+
+            // Periodic summary
+            if (_infectedSpawnCount % 10 == 0)
+            {
+                Plugin.Log.LogWarning($"[ZSlayerHQ] === {_infectedSpawnCount} infected bots spawned, {ZombieRegistry.Count} registered ===");
             }
         }
         catch (System.Exception ex)

@@ -22,26 +22,45 @@ namespace ZSlayerZombieClient.Patches;
 [HarmonyPatch(typeof(BotMeleeWeaponData), nameof(BotMeleeWeaponData.RunToEnemyUpdate))]
 public class InfectedMeleeFix
 {
-    private static bool _loggedOnce;
+    private static bool _loggedFirstFix;
+    private static bool _loggedFirstNoFix;
+    private static int _fixCount;
 
     [HarmonyAfter("me.sol.sain")]
     [HarmonyPrefix]
     public static void Prefix(BotMeleeWeaponData __instance, ref bool __runOriginal)
     {
-        // If the original was already going to run, nothing to fix
-        if (__runOriginal) return;
-
-        // Only override for infected bots — let SAIN manage everything else
         var botOwner = __instance.BotOwner_0;
-        if (botOwner != null && ZombieIdentifier.IsInfected(botOwner))
-        {
-            __runOriginal = true;
+        if (botOwner == null) return;
 
-            // Log once to confirm the fix is working
-            if (!_loggedOnce)
+        bool isInfected = ZombieIdentifier.IsInfected(botOwner);
+
+        // For non-infected bots, don't interfere
+        if (!isInfected) return;
+
+        if (!__runOriginal)
+        {
+            // SAIN blocked the original — we need to restore it
+            __runOriginal = true;
+            _fixCount++;
+
+            if (!_loggedFirstFix)
             {
-                _loggedOnce = true;
-                Plugin.Log.LogInfo("[ZSlayerHQ] InfectedMeleeFix: restored RunToEnemyUpdate for infected bot (SAIN override active)");
+                _loggedFirstFix = true;
+                Plugin.Log.LogWarning($"[ZSlayerHQ] InfectedMeleeFix: RESTORED RunToEnemyUpdate for infected bot (SAIN was blocking melee)");
+                Plugin.Log.LogWarning($"[ZSlayerHQ]   Bot: {ZombieDebug.BotId(botOwner)}, Role: {botOwner.Profile.Info.Settings.Role}");
+            }
+
+            ZombieDebug.LogThrottled("melee-fix", 10f,
+                $"InfectedMeleeFix: restored melee for {ZombieDebug.BotId(botOwner)} (total fixes: {_fixCount})");
+        }
+        else
+        {
+            // Original was already going to run — SAIN not blocking (or SAIN not installed)
+            if (!_loggedFirstNoFix)
+            {
+                _loggedFirstNoFix = true;
+                ZombieDebug.Log($"InfectedMeleeFix: RunToEnemyUpdate already allowed for infected bot {ZombieDebug.BotId(botOwner)} (SAIN not blocking)");
             }
         }
     }

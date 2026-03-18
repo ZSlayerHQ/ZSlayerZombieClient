@@ -45,6 +45,8 @@ public class ShamblerLogic : CustomLogic
         _nextLookTime = 0f;
         _isLunging = false;
         _lastDistance = 999f;
+
+        ZombieDebug.LogLogicStart("Shambler", BotOwner, $"speed={_speed:F2}");
     }
 
     public override void Update(CustomLayer.ActionData data)
@@ -119,6 +121,8 @@ public class ShamblerLogic : CustomLogic
                 : Random.Range(ZombieConstants.StumbleMinDuration, ZombieConstants.StumbleMaxDuration);
             _stumbleEndTime = time + stumbleDuration;
             BotOwner.Mover.SetTargetMoveSpeed(0.05f);
+            ZombieDebug.LogThrottled($"shambler-stumble-{ZombieDebug.BotId(BotOwner)}", 10f,
+                $"Shambler [{ZombieDebug.BotId(BotOwner)}]: STUMBLE for {stumbleDuration:F1}s at {distance:F1}m");
             return;
         }
 
@@ -146,6 +150,7 @@ public class ShamblerLogic : CustomLogic
             BotOwner.BotTalk?.Say(EPhraseTrigger.OnFight);
             _lastDistance = distance;
             BotOwner.Mover.GoToPoint(targetPos, false, 0.5f);
+            ZombieDebug.LogCombatEvent("Shambler", BotOwner, "LUNGE", distance);
             return;
         }
 

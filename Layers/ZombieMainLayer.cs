@@ -9,6 +9,7 @@ namespace ZSlayerZombieClient.Layers;
 public class ZombieMainLayer : CustomLayer
 {
     private static bool _loggedActivation;
+    private static int _activationCount;
 
     public ZombieMainLayer(BotOwner botOwner, int priority) : base(botOwner, priority) { }
 
@@ -21,16 +22,24 @@ public class ZombieMainLayer : CustomLayer
         // Set zombie to aggressive when enemy detected
         if (ZombieRegistry.TryGet(BotOwner, out var entry))
         {
+            if (entry.Alert != AlertState.Aggressive)
+            {
+                ZombieDebug.LogStateChange("MainLayer", BotOwner,
+                    entry.Alert.ToString(), "Aggressive", "enemy detected");
+            }
             entry.Alert = AlertState.Aggressive;
             entry.LastAlertTime = UnityEngine.Time.time;
         }
 
-        // Log first activation to confirm BigBrain layers work
+        // Log first activation as warning (always visible)
         if (!_loggedActivation)
         {
             _loggedActivation = true;
             Plugin.Log.LogWarning("[ZSlayerHQ] ZombieMainLayer ACTIVATED — BigBrain combat layer is working!");
         }
+
+        _activationCount++;
+        ZombieDebug.LogLayerActive("Combat", BotOwner);
 
         return true;
     }
@@ -50,14 +59,19 @@ public class ZombieMainLayer : CustomLayer
             _ => typeof(ShamblerLogic),
         };
 
-        if (Plugin.ClientConfig.DebugLogging.Value)
-            Plugin.Log.LogInfo($"[ZSlayerHQ] Combat logic: {entry.Archetype.Type} for bot {BotOwner.Profile.Id.Substring(0, 8)}");
+        var id = ZombieDebug.BotId(BotOwner);
+        ZombieDebug.Log($"Combat GetNextAction: bot={id} -> {entry.Archetype.Type} (logicType={logicType.Name})");
 
         return new Action(logicType, $"{entry.Archetype.Type}-combat");
     }
 
     public override bool IsCurrentActionEnding()
     {
-        return !BotOwner.Memory.HaveEnemy;
+        bool ending = !BotOwner.Memory.HaveEnemy;
+        if (ending)
+        {
+            ZombieDebug.Log($"Combat action ending: bot={ZombieDebug.BotId(BotOwner)} (lost enemy)");
+        }
+        return ending;
     }
 }

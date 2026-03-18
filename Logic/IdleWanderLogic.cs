@@ -39,6 +39,8 @@ public class IdleWanderLogic : CustomLogic
         _nextWanderTime = 0f;
         _isPaused = false;
         _nextLookTime = 0f;
+
+        ZombieDebug.LogLogicStart("IdleWander", BotOwner, $"speed={ZombieHelper.ApplySpeedVariance(0.4f, _speedMul):F2}");
     }
 
     public override void Update(CustomLayer.ActionData data)

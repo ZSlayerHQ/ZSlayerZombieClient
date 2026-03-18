@@ -18,18 +18,20 @@ public class ZombieIdleLayer : CustomLayer
         // Ensure zombie is registered on first check
         ZombieRegistry.GetOrRegister(BotOwner);
 
-        // Log first activation
+        // Log first activation (always visible)
         if (!_loggedActivation)
         {
             _loggedActivation = true;
-            Plugin.Log.LogInfo("[ZSlayerHQ] ZombieIdleLayer ACTIVATED — BigBrain idle layer is working");
+            Plugin.Log.LogWarning("[ZSlayerHQ] ZombieIdleLayer ACTIVATED — BigBrain idle layer is working");
         }
 
+        ZombieDebug.LogLayerActive("Idle", BotOwner);
         return true;
     }
 
     public override Action GetNextAction()
     {
+        ZombieDebug.Log($"Idle GetNextAction: bot={ZombieDebug.BotId(BotOwner)} -> IdleWanderLogic");
         return new Action(typeof(IdleWanderLogic), "idle-wander");
     }
 

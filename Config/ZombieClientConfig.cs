@@ -41,6 +41,6 @@ public class ZombieClientConfig
         InfectedBrainNames = config.Bind("Brain", "InfectedBrainNames", "InfectedSlow,InfectedFast,InfectedShooting",
             "Comma-separated brain names for infected bots (may change between SPT versions)");
 
-        DebugLogging = config.Bind("Debug", "DebugLogging", false, "Enable verbose debug logging");
+        DebugLogging = config.Bind("Debug", "DebugLogging", true, "Enable verbose debug logging (disable for production)");
     }
 }

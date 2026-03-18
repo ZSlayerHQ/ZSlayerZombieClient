@@ -36,6 +36,8 @@ public class StalkerLogic : CustomLogic
         _isPeeking = false;
         _circleAngle = Random.Range(0f, 360f);
         _nextPeekTime = Time.time + Random.Range(3f, 6f);
+
+        ZombieDebug.LogLogicStart("Stalker", BotOwner, "crouched, circling");
     }
 
     public override void Update(CustomLayer.ActionData data)
@@ -100,6 +102,7 @@ public class StalkerLogic : CustomLogic
             _peekEndTime = time + Random.Range(1.5f, 3.5f);
             BotOwner.Mover.SetTargetMoveSpeed(0f);
             BotOwner.Mover.SetPose(0.2f); // Crouch lower while peeking
+            ZombieDebug.LogStateChange("Stalker", BotOwner, "Circling", "Peeking", $"dist={distance:F1}m");
             return;
         }
 
@@ -141,6 +144,7 @@ public class StalkerLogic : CustomLogic
                 BotOwner.Mover.SetTargetMoveSpeed(1f);
                 BotOwner.Mover.SetPose(1f); // Stand up for the charge
                 BotOwner.BotTalk?.Say(EPhraseTrigger.OnFight);
+                ZombieDebug.LogCombatEvent("Stalker", BotOwner, "FLANK RUSH", distance);
             }
         }
         else
@@ -153,6 +157,7 @@ public class StalkerLogic : CustomLogic
             BotOwner.Mover.SetPose(1f); // Stand up for attack
             BotOwner.BotTalk?.Say(EPhraseTrigger.OnFight);
             BotOwner.Mover.GoToPoint(targetPos, false, 0.3f);
+            ZombieDebug.LogCombatEvent("Stalker", BotOwner, "CLOSE RANGE RUSH", distance);
         }
     }
 

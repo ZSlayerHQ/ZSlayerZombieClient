@@ -31,6 +31,8 @@ public class BerserkerLogic : CustomLogic
 
         // Opening scream
         BotOwner.BotTalk?.Say(EPhraseTrigger.OnFight);
+
+        ZombieDebug.LogLogicStart("Berserker", BotOwner, "MAX AGGRESSION");
     }
 
     public override void Update(CustomLayer.ActionData data)
