@@ -18,6 +18,9 @@ public class ZombieIdleLayer : CustomLayer
         // Ensure zombie is registered on first check
         ZombieRegistry.GetOrRegister(BotOwner);
 
+        // Force melee weapon equipped even when idle (replicates vanilla brain ManualUpdate)
+        ZombieMelee.EnsureMeleeEquipped(BotOwner);
+
         // Log first activation (always visible)
         if (!_loggedActivation)
         {

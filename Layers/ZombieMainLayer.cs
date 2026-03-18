@@ -19,6 +19,10 @@ public class ZombieMainLayer : CustomLayer
     {
         if (!BotOwner.Memory.HaveEnemy) return false;
 
+        // Force melee weapon equipped (replicates vanilla brain's ManualUpdate)
+        // Without this, zombies may have guns/nothing equipped and can't attack
+        ZombieMelee.EnsureMeleeEquipped(BotOwner);
+
         // Set zombie to aggressive when enemy detected
         if (ZombieRegistry.TryGet(BotOwner, out var entry))
         {
