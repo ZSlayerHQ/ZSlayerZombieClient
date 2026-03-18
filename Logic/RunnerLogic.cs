@@ -50,6 +50,10 @@ public class RunnerLogic : CustomLogic
         var targetPos = enemy.CurrPosition;
         float distance = (BotOwner.Position - targetPos).magnitude;
 
+        // Delegate to vanilla melee when in close combat range
+        if (ZombieMelee.TryMeleeAttack(BotOwner, distance))
+            return;
+
         // Head tracking — always face the target
         if (time >= _nextLookTime)
         {

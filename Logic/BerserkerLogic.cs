@@ -44,6 +44,10 @@ public class BerserkerLogic : CustomLogic
         var targetPos = enemy.CurrPosition;
         float distance = (BotOwner.Position - targetPos).magnitude;
 
+        // Delegate to vanilla melee when in close combat range
+        if (ZombieMelee.TryMeleeAttack(BotOwner, distance))
+            return;
+
         // Constant head tracking
         if (time >= _nextLookTime)
         {
