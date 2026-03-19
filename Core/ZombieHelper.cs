@@ -1,3 +1,6 @@
+using EFT;
+using UnityEngine;
+
 namespace ZSlayerZombieClient.Core;
 
 /// <summary>
@@ -6,6 +9,17 @@ namespace ZSlayerZombieClient.Core;
 /// </summary>
 public static class ZombieHelper
 {
+    /// <summary>
+    /// Face the zombie toward a target position. Prevents moonwalking
+    /// (moving in one direction while looking another way).
+    /// Call this after GoToPoint() in logic Update methods.
+    /// </summary>
+    public static void FaceTarget(BotOwner bot, Vector3 target)
+    {
+        try { bot.Steering?.LookToPoint(target); }
+        catch { }
+    }
+
     /// <summary>
     /// Returns an appropriate path update interval based on distance to target.
     /// Distant zombies update their NavMesh path much less frequently,
