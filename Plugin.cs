@@ -80,7 +80,7 @@ public class Plugin : BaseUnityPlugin
 
         // Apply Harmony patches
         new Harmony("com.zslayerhq.zombieclient").PatchAll();
-        Log.LogInfo("[ZSlayerHQ] Harmony patches applied (InfectedMeleeFix, BotSpawnPatch)");
+        Log.LogInfo("[ZSlayerHQ] Harmony patches applied (InfectedMeleeFix, BotSpawnPatch, ZombieBrainPatch, BotDeathPatch)");
 
         // Create HordeManager MonoBehaviour
         if (ClientConfig.HordeEnabled.Value)
