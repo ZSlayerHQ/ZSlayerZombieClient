@@ -24,6 +24,22 @@ public class BotSpawnPatch
         // Register zombie (lazy — may already be registered via layer activation)
         var entry = ZombieRegistry.GetOrRegister(__instance);
 
+        // Set nickname to archetype name so kill feed / AmandsSense / telemetry shows "Stalker" instead of "???"
+        // Profile.Nickname is a computed property (=> Info.Nickname), and Info.Nickname is a public string field.
+        try
+        {
+            var archetypeName = entry.Archetype.Type.ToString();
+            var nickname = __instance.Profile.Info.Nickname;
+            if (string.IsNullOrEmpty(nickname) || nickname == "???" || nickname == "Infected")
+            {
+                __instance.Profile.Info.Nickname = archetypeName;
+            }
+        }
+        catch (System.Exception ex)
+        {
+            Plugin.Log.LogWarning($"[ZSlayerHQ] Failed to set zombie nickname: {ex.Message}");
+        }
+
         // Detect actual brain name via BaseBrain.ShortName() — this is what BigBrain matches
         try
         {
