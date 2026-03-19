@@ -68,6 +68,7 @@ public class WraithLogic : CustomLogic
         float time = Time.time;
         var targetPos = enemy.CurrPosition;
         float distance = (BotOwner.Position - targetPos).magnitude;
+        ZombieHelper.FaceTarget(BotOwner, targetPos);
 
         // Delegate to vanilla melee when in close combat range
         if (ZombieMelee.TryMeleeAttack(BotOwner, distance))
