@@ -1,6 +1,6 @@
 # ZSlayer SPT Zombies
 
-![Version](https://img.shields.io/badge/Version-v1.0.0-c8aa6e?style=flat-square)
+![Version](https://img.shields.io/badge/Version-v1.1.0-c8aa6e?style=flat-square)
 ![SPT](https://img.shields.io/badge/SPT-~4.0.x-blue?style=flat-square)
 ![BigBrain](https://img.shields.io/badge/BigBrain-Required-red?style=flat-square)
 ![SAIN](https://img.shields.io/badge/SAIN-Optional-green?style=flat-square)
@@ -373,6 +373,12 @@ ZSlayerZombieClient/          -- mono-repo root
 - **BigBrain:** DrakiaXYZ — the custom brain layer framework that makes this possible
 - **SAIN:** Solarint — personality system integration for fear mechanics
 - **SPT Team** — for the modding platform
+
+---
+
+## License
+
+[CC BY-NC-SA 4.0](LICENSE) — Built by [ZSlayerHQ / Ben Cole](https://github.com/ZSlayerHQ)
 
 ---
 
