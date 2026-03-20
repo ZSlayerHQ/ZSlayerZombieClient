@@ -1,6 +1,7 @@
 using DrakiaXYZ.BigBrain.Brains;
 using EFT;
 using UnityEngine;
+using ZSlayerZombieClient.Animation;
 using ZSlayerZombieClient.Core;
 
 namespace ZSlayerZombieClient.Logic;
@@ -46,6 +47,7 @@ public class ShamblerLogic : CustomLogic
         _isLunging = false;
         _lastDistance = 999f;
 
+        ZombieAnimationController.SetState(BotOwner, ZombieAnimState.Normal);
         ZombieDebug.LogLogicStart("Shambler", BotOwner, $"speed={_speed:F2}");
     }
 
@@ -83,6 +85,7 @@ public class ShamblerLogic : CustomLogic
                 _isLunging = false;
                 BotOwner.Mover.Sprint(false);
                 BotOwner.Mover.SetTargetMoveSpeed(_speed);
+                ZombieAnimationController.SetState(BotOwner, ZombieAnimState.Normal);
             }
             else
             {
@@ -106,6 +109,7 @@ public class ShamblerLogic : CustomLogic
             }
 
             _isStumbling = false;
+            ZombieAnimationController.SetState(BotOwner, ZombieAnimState.Normal);
             _speed = ZombieHelper.ApplySpeedVariance(
                 Random.Range(Plugin.ClientConfig.ShamblerMinSpeed.Value, Plugin.ClientConfig.ShamblerMaxSpeed.Value),
                 _speedMul);
@@ -124,6 +128,7 @@ public class ShamblerLogic : CustomLogic
         if (time >= _nextStumbleTime && !_isLunging)
         {
             _isStumbling = true;
+            ZombieAnimationController.SetState(BotOwner, ZombieAnimState.Stumbling);
             // Longer stumbles at distance (patient), shorter up close (urgent)
             float stumbleDuration = distance > 15f
                 ? Random.Range(1f, 2.5f)
@@ -159,6 +164,7 @@ public class ShamblerLogic : CustomLogic
             BotOwner.BotTalk?.Say(EPhraseTrigger.OnFight);
             _lastDistance = distance;
             BotOwner.Mover.GoToPoint(targetPos, false, 0.5f);
+            ZombieAnimationController.SetState(BotOwner, ZombieAnimState.Lunging);
             ZombieDebug.LogCombatEvent("Shambler", BotOwner, "LUNGE", distance);
             return;
         }

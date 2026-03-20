@@ -1,6 +1,7 @@
 using DrakiaXYZ.BigBrain.Brains;
 using EFT;
 using UnityEngine;
+using ZSlayerZombieClient.Animation;
 using ZSlayerZombieClient.Core;
 
 namespace ZSlayerZombieClient.Logic;
@@ -137,6 +138,7 @@ public class RunnerLogic : CustomLogic
         BotOwner.Mover.Sprint(true);
         BotOwner.Mover.SetTargetMoveSpeed(ZombieHelper.ApplySpeedVariance(1f, _speedMul));
 
+        ZombieAnimationController.SetState(BotOwner, ZombieAnimState.Rushing);
         ZombieDebug.LogStateChange("Runner", BotOwner, "Recovery", "Sprint", $"duration={duration:F1}s");
     }
 
@@ -148,6 +150,7 @@ public class RunnerLogic : CustomLogic
         BotOwner.Mover.Sprint(false);
         BotOwner.Mover.SetTargetMoveSpeed(ZombieHelper.ApplySpeedVariance(0.6f, _speedMul));
 
+        ZombieAnimationController.SetState(BotOwner, ZombieAnimState.Normal);
         ZombieDebug.LogStateChange("Runner", BotOwner, "Sprint", "Recovery", $"duration={duration:F1}s");
     }
 }

@@ -1,6 +1,7 @@
 using DrakiaXYZ.BigBrain.Brains;
 using EFT;
 using UnityEngine;
+using ZSlayerZombieClient.Animation;
 using ZSlayerZombieClient.Core;
 
 namespace ZSlayerZombieClient.Logic;
@@ -32,6 +33,7 @@ public class BerserkerLogic : CustomLogic
         // Opening scream
         BotOwner.BotTalk?.Say(EPhraseTrigger.OnFight);
 
+        ZombieAnimationController.SetState(BotOwner, ZombieAnimState.Rushing);
         ZombieDebug.LogLogicStart("Berserker", BotOwner, "MAX AGGRESSION");
     }
 
