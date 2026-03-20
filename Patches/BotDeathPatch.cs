@@ -1,5 +1,6 @@
 using EFT;
 using HarmonyLib;
+using ZSlayerZombieClient.Animation;
 using ZSlayerZombieClient.Core;
 
 namespace ZSlayerZombieClient.Patches;
@@ -32,6 +33,7 @@ public class BotDeathPatch
             catch { }
         }
 
+        ZombieAnimationController.Cleanup(__instance);
         ZombieRegistry.Remove(__instance);
         ZombieMelee.OnBotRemoved(ZombieDebug.BotId(__instance));
     }
