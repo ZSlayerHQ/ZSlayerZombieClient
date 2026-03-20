@@ -1,6 +1,7 @@
 using DrakiaXYZ.BigBrain.Brains;
 using EFT;
 using UnityEngine;
+using ZSlayerZombieClient.Animation;
 using ZSlayerZombieClient.Core;
 
 namespace ZSlayerZombieClient.Logic;
@@ -42,6 +43,7 @@ public class CrawlerLogic : CustomLogic
         _isStandingForObstacle = false;
         _isLunging = false;
 
+        ZombieAnimationController.SetState(BotOwner, ZombieAnimState.Normal);
         ZombieDebug.LogLogicStart("Crawler", BotOwner, $"PRONE speed={CrawlSpeed}");
     }
 
@@ -80,6 +82,7 @@ public class CrawlerLogic : CustomLogic
                 BotOwner.Mover.Sprint(false);
                 BotOwner.Mover.SetPose(0f); // Back to prone
                 BotOwner.Mover.SetTargetMoveSpeed(CrawlSpeed);
+                ZombieAnimationController.SetState(BotOwner, ZombieAnimState.Normal);
             }
             else
             {
@@ -150,6 +153,7 @@ public class CrawlerLogic : CustomLogic
             BotOwner.Mover.SetTargetMoveSpeed(1f);
             BotOwner.BotTalk?.Say(EPhraseTrigger.OnFight);
             BotOwner.Mover.GoToPoint(targetPos, false, 0.3f);
+            ZombieAnimationController.SetState(BotOwner, ZombieAnimState.Lunging);
             ZombieDebug.LogCombatEvent("Crawler", BotOwner, "STAND-UP LUNGE", distance);
         }
     }

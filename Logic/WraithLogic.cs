@@ -2,6 +2,7 @@ using DrakiaXYZ.BigBrain.Brains;
 using EFT;
 using UnityEngine;
 using UnityEngine.AI;
+using ZSlayerZombieClient.Animation;
 using ZSlayerZombieClient.Core;
 
 namespace ZSlayerZombieClient.Logic;
@@ -57,6 +58,7 @@ public class WraithLogic : CustomLogic
         BotOwner.Mover.SetTargetMoveSpeed(0.7f);
         BotOwner.Mover.SetPose(1f);
 
+        ZombieAnimationController.SetState(BotOwner, ZombieAnimState.Normal);
         ZombieDebug.LogLogicStart("Wraith", BotOwner, "state=Stalking");
     }
 
@@ -129,6 +131,7 @@ public class WraithLogic : CustomLogic
                     $"player looking at us! dist={distance:F1}m");
                 TransitionTo(WraithState.Spotted, 0.4f);
                 BotOwner.Mover.SetTargetMoveSpeed(0f);
+                ZombieAnimationController.SetState(BotOwner, ZombieAnimState.Frozen);
                 return;
             }
         }
@@ -185,6 +188,7 @@ public class WraithLogic : CustomLogic
             ZombieDebug.LogStateChange("Wraith", BotOwner, "Spotted", "Fleeing", "freeze ended, screaming and running");
             TransitionTo(WraithState.Fleeing, Random.Range(2.5f, 4f));
             BotOwner.BotTalk?.Say(EPhraseTrigger.OnFight); // Scream as it flees
+            ZombieAnimationController.SetState(BotOwner, ZombieAnimState.Rushing);
             _hasFleeTarget = false;
         }
     }
@@ -235,6 +239,7 @@ public class WraithLogic : CustomLogic
             TransitionTo(WraithState.Cooldown, Random.Range(3f, 5f));
             BotOwner.Mover.Sprint(false);
             BotOwner.Mover.SetTargetMoveSpeed(0f);
+            ZombieAnimationController.SetState(BotOwner, ZombieAnimState.Stumbling);
         }
     }
 
@@ -257,6 +262,7 @@ public class WraithLogic : CustomLogic
             ZombieDebug.LogStateChange("Wraith", BotOwner, "Cooldown", "Stalking", $"resuming approach, dist={distance:F1}m");
             TransitionTo(WraithState.Stalking, 0f);
             BotOwner.Mover.SetTargetMoveSpeed(0.5f);
+            ZombieAnimationController.SetState(BotOwner, ZombieAnimState.Normal);
         }
     }
 

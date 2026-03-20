@@ -1,6 +1,7 @@
 using DrakiaXYZ.BigBrain.Brains;
 using EFT;
 using UnityEngine;
+using ZSlayerZombieClient.Animation;
 using ZSlayerZombieClient.Core;
 
 namespace ZSlayerZombieClient.Logic;
@@ -37,6 +38,7 @@ public class StalkerLogic : CustomLogic
         _circleAngle = Random.Range(0f, 360f);
         _nextPeekTime = Time.time + Random.Range(3f, 6f);
 
+        ZombieAnimationController.SetState(BotOwner, ZombieAnimState.Normal);
         ZombieDebug.LogLogicStart("Stalker", BotOwner, "crouched, circling");
     }
 
@@ -75,6 +77,7 @@ public class StalkerLogic : CustomLogic
                 BotOwner.Mover.Sprint(false);
                 BotOwner.Mover.SetPose(0.3f); // Back to crouch
                 BotOwner.Mover.SetTargetMoveSpeed(0.4f);
+                ZombieAnimationController.SetState(BotOwner, ZombieAnimState.Normal);
             }
             else
             {
@@ -95,6 +98,7 @@ public class StalkerLogic : CustomLogic
                 _isPeeking = false;
                 BotOwner.Mover.SetTargetMoveSpeed(0.4f);
                 _nextPeekTime = time + Random.Range(4f, 8f);
+                ZombieAnimationController.SetState(BotOwner, ZombieAnimState.Normal);
             }
             else
             {
@@ -111,6 +115,7 @@ public class StalkerLogic : CustomLogic
             _peekEndTime = time + Random.Range(1.5f, 3.5f);
             BotOwner.Mover.SetTargetMoveSpeed(0f);
             BotOwner.Mover.SetPose(0.2f); // Crouch lower while peeking
+            ZombieAnimationController.SetState(BotOwner, ZombieAnimState.Frozen);
             ZombieDebug.LogStateChange("Stalker", BotOwner, "Circling", "Peeking", $"dist={distance:F1}m");
             return;
         }
@@ -153,6 +158,7 @@ public class StalkerLogic : CustomLogic
                 BotOwner.Mover.SetTargetMoveSpeed(1f);
                 BotOwner.Mover.SetPose(1f); // Stand up for the charge
                 BotOwner.BotTalk?.Say(EPhraseTrigger.OnFight);
+                ZombieAnimationController.SetState(BotOwner, ZombieAnimState.Rushing);
                 ZombieDebug.LogCombatEvent("Stalker", BotOwner, "FLANK RUSH", distance);
             }
         }
@@ -166,6 +172,7 @@ public class StalkerLogic : CustomLogic
             BotOwner.Mover.SetPose(1f); // Stand up for attack
             BotOwner.BotTalk?.Say(EPhraseTrigger.OnFight);
             BotOwner.Mover.GoToPoint(targetPos, false, 0.3f);
+            ZombieAnimationController.SetState(BotOwner, ZombieAnimState.Rushing);
             ZombieDebug.LogCombatEvent("Stalker", BotOwner, "CLOSE RANGE RUSH", distance);
         }
     }
