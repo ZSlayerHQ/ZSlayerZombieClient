@@ -46,13 +46,23 @@ public class HordeManager : MonoBehaviour
 
         // Collect living zombies
         _liveZombies.Clear();
+        int totalRegistered = ZombieRegistry.Count;
+        int nullBots = 0;
+        int deadBots = 0;
         foreach (var entry in ZombieRegistry.GetAll())
         {
-            if (entry.Bot != null && !entry.Bot.IsDead)
-                _liveZombies.Add(entry);
+            if (entry.Bot == null) { nullBots++; continue; }
+            if (entry.Bot.IsDead) { deadBots++; continue; }
+            _liveZombies.Add(entry);
         }
 
-        if (_liveZombies.Count < 2) return;
+        if (_liveZombies.Count < 2)
+        {
+            ZombieDebug.LogThrottled("horde-nogroup", 15f,
+                $"Horde: not enough live zombies ({_liveZombies.Count} alive, " +
+                $"{totalRegistered} registered, {nullBots} null, {deadBots} dead)");
+            return;
+        }
 
         if (!_loggedFirstTick)
         {
