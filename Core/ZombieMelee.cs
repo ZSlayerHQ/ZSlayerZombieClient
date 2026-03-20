@@ -90,80 +90,70 @@ public static class ZombieMelee
         {
             var melee = bot.WeaponManager.Melee;
             var botId = ZombieDebug.BotId(bot);
+            bool hasMelee = bot.WeaponManager.IsMelee;
 
             // Step 1: Force melee weapon equipped (replicates vanilla ManualUpdate)
-            if (!bot.WeaponManager.IsMelee)
+            if (!hasMelee && bot.WeaponManager.Selector.CanChangeToMeleeWeapons)
             {
-                if (bot.WeaponManager.Selector.CanChangeToMeleeWeapons)
+                bot.WeaponManager.Selector.ChangeToMelee();
+                hasMelee = true;
+                _equipCount++;
+                if (!_loggedFirstEquip)
                 {
-                    bot.WeaponManager.Selector.ChangeToMelee();
-                    _equipCount++;
-                    if (!_loggedFirstEquip)
-                    {
-                        _loggedFirstEquip = true;
-                        Plugin.Log.LogWarning($"[ZSlayerHQ] ZombieMelee: Forced ChangeToMelee for {botId}");
-                    }
-                }
-                else
-                {
-                    _noMeleeCallCount++;
-                    if (!_loggedFirstNoMelee)
-                    {
-                        _loggedFirstNoMelee = true;
-                        Plugin.Log.LogWarning($"[ZSlayerHQ] ZombieMelee: Cannot ChangeToMelee for {botId} " +
-                            $"(IsMelee={bot.WeaponManager.IsMelee}, CanChange={bot.WeaponManager.Selector.CanChangeToMeleeWeapons})");
-                    }
+                    _loggedFirstEquip = true;
+                    Plugin.Log.LogWarning($"[ZSlayerHQ] ZombieMelee: Forced ChangeToMelee for {botId}");
                 }
             }
 
-            // Step 2: Call RunToEnemyUpdate — handles approach movement + attack animation
-            if (bot.Memory?.GoalEnemy == null) return false;
-
-            bool vanillaResult = melee.RunToEnemyUpdate();
-            _meleeCallCount++;
-
-            if (!_loggedFirstMelee)
+            // Step 2: Call RunToEnemyUpdate if melee is equipped — handles approach + animation
+            bool vanillaResult = false;
+            if (hasMelee && bot.Memory?.GoalEnemy != null)
             {
-                _loggedFirstMelee = true;
-                Plugin.Log.LogWarning($"[ZSlayerHQ] ZombieMelee: FIRST RunToEnemyUpdate for {botId} " +
-                    $"at {distance:F1}m (result={vanillaResult}, IsMelee={bot.WeaponManager.IsMelee})");
-            }
+                vanillaResult = melee.RunToEnemyUpdate();
+                _meleeCallCount++;
 
-            if (!vanillaResult)
-            {
-                _failCount++;
-                if (!_loggedFirstFail)
+                if (!_loggedFirstMelee)
                 {
-                    _loggedFirstFail = true;
-                    Plugin.Log.LogWarning($"[ZSlayerHQ] ZombieMelee: RunToEnemyUpdate FAILED for {botId} " +
-                        $"(ShallEndRun={melee.ShallEndRun}, IsMelee={bot.WeaponManager.IsMelee})");
+                    _loggedFirstMelee = true;
+                    Plugin.Log.LogWarning($"[ZSlayerHQ] ZombieMelee: FIRST RunToEnemyUpdate for {botId} " +
+                        $"at {distance:F1}m (result={vanillaResult})");
                 }
+
+                if (!vanillaResult) _failCount++;
+            }
+            else
+            {
+                // No melee weapon — bot still needs to approach via logic class movement
+                // We just handle damage when close enough (Step 3)
+                _noMeleeCallCount++;
             }
 
-            // Step 3: Log animator state for attack animation discovery
-            LogAnimatorState(bot, distance, vanillaResult);
-
-            // Step 4: Apply direct damage when in range — this IS the damage system
-            // RunToEnemyUpdate provides the animation, we provide the damage
+            // Step 3: Apply direct damage when in range — this IS the damage system
+            // Works for ALL zombies: with melee weapon (animation + damage) or without (just damage)
             if (distance <= DirectAttackRange)
             {
                 TryDirectAttack(bot, distance);
                 return true; // We're handling combat
             }
 
+            // Step 4: Log animator state for attack animation discovery (only when close)
+            if (distance <= DirectAttackRange + 2f)
+                LogAnimatorState(bot, distance, vanillaResult);
+
             // Stats logging
-            if (_meleeCallCount % 500 == 0)
+            if (_meleeCallCount % 500 == 0 && _meleeCallCount > 0)
             {
-                Plugin.Log.LogInfo($"[ZSlayerHQ] ZombieMelee stats: {_meleeCallCount} calls, {_equipCount} equips, " +
-                    $"{_failCount} fails, {_directAttackCount} direct hits, {_discoveredAnimStates.Count} anim states seen");
+                Plugin.Log.LogInfo($"[ZSlayerHQ] ZombieMelee stats: {_meleeCallCount} melee, {_noMeleeCallCount} no-weapon, " +
+                    $"{_failCount} fails, {_directAttackCount} direct hits, {_discoveredAnimStates.Count} anim states");
             }
 
+            // Return true if vanilla melee is driving approach, false so logic class handles movement
             return vanillaResult;
         }
         catch (System.Exception ex)
         {
             ZombieDebug.LogThrottled($"melee-err-{ZombieDebug.BotId(bot)}", 10f,
-                $"ZombieMelee error for {ZombieDebug.BotId(bot)}: {ex.Message}");
+                $"ZombieMelee error for {ZombieDebug.BotId(bot)}: {ex.Message}\n{ex.StackTrace}");
             return false;
         }
     }
@@ -225,7 +215,7 @@ public static class ZombieMelee
     /// </summary>
     private static bool TryDirectAttack(BotOwner bot, float distance)
     {
-        var enemy = bot.Memory.GoalEnemy;
+        var enemy = bot.Memory?.GoalEnemy;
         if (enemy?.Person == null) return false;
 
         var botId = ZombieDebug.BotId(bot);
