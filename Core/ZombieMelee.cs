@@ -43,14 +43,15 @@ public static class ZombieMelee
 
     private static bool _loggedFirstMelee;
     private static bool _loggedFirstEquip;
-    private static bool _loggedFirstFail;
     private static bool _loggedFirstNoMelee;
     private static bool _loggedFirstDirectAttack;
+    private static bool _loggedFirstKnifeKick;
     private static int _meleeCallCount;
     private static int _equipCount;
     private static int _failCount;
     private static int _noMeleeCallCount;
     private static int _directAttackCount;
+    private static int _knifeKickCount;
 
     /// <summary>Per-bot cooldown tracker for direct damage attacks.</summary>
     private static readonly Dictionary<string, float> _lastDirectAttackTime = new();
@@ -105,7 +106,7 @@ public static class ZombieMelee
                 }
             }
 
-            // Step 2: Call RunToEnemyUpdate if melee is equipped — handles approach + animation
+            // Step 2: Call RunToEnemyUpdate if melee is equipped — handles approach movement
             bool vanillaResult = false;
             if (hasMelee && bot.Memory?.GoalEnemy != null)
             {
@@ -116,23 +117,28 @@ public static class ZombieMelee
                 {
                     _loggedFirstMelee = true;
                     Plugin.Log.LogWarning($"[ZSlayerHQ] ZombieMelee: FIRST RunToEnemyUpdate for {botId} " +
-                        $"at {distance:F1}m (result={vanillaResult})");
+                        $"at {distance:F1}m (result={vanillaResult}, KnifeCtrl={melee.KnifeController != null})");
                 }
 
                 if (!vanillaResult) _failCount++;
             }
             else
             {
-                // No melee weapon — bot still needs to approach via logic class movement
-                // We just handle damage when close enough (Step 3)
                 _noMeleeCallCount++;
             }
 
-            // Step 3: Apply direct damage when in range — this IS the damage system
-            // Works for ALL zombies: with melee weapon (animation + damage) or without (just damage)
+            // Step 3: ATTACK — try KnifeController.MakeKnifeKick() first (triggers swipe animation + damage)
+            // The vanilla brain's GClass98 returns BotLogicDecision.oneMeleeAttack which calls method_2()
+            // → KnifeController.MakeKnifeKick(). Since we replaced the brain with BigBrain, the decision
+            // system never returns oneMeleeAttack. We call MakeKnifeKick() directly.
             if (distance <= DirectAttackRange)
             {
-                TryDirectAttack(bot, distance);
+                bool kicked = TryKnifeKick(bot, melee);
+                if (!kicked)
+                {
+                    // Fallback: direct damage for zombies without KnifeController
+                    TryDirectAttack(bot, distance);
+                }
                 return true; // We're handling combat
             }
 
@@ -141,10 +147,10 @@ public static class ZombieMelee
                 LogAnimatorState(bot, distance, vanillaResult);
 
             // Stats logging
-            if (_meleeCallCount % 500 == 0 && _meleeCallCount > 0)
+            if ((_meleeCallCount + _noMeleeCallCount) % 500 == 0 && (_meleeCallCount + _noMeleeCallCount) > 0)
             {
                 Plugin.Log.LogInfo($"[ZSlayerHQ] ZombieMelee stats: {_meleeCallCount} melee, {_noMeleeCallCount} no-weapon, " +
-                    $"{_failCount} fails, {_directAttackCount} direct hits, {_discoveredAnimStates.Count} anim states");
+                    $"{_knifeKickCount} kicks, {_directAttackCount} direct hits, {_discoveredAnimStates.Count} anim states");
             }
 
             // Return true if vanilla melee is driving approach, false so logic class handles movement
@@ -154,6 +160,52 @@ public static class ZombieMelee
         {
             ZombieDebug.LogThrottled($"melee-err-{ZombieDebug.BotId(bot)}", 10f,
                 $"ZombieMelee error for {ZombieDebug.BotId(bot)}: {ex.Message}\n{ex.StackTrace}");
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Trigger the actual swipe animation + damage via KnifeController.MakeKnifeKick().
+    /// This is what the vanilla brain's BotLogicDecision.oneMeleeAttack → method_2() calls.
+    /// We call it directly since BigBrain layers bypass the vanilla decision system.
+    /// Returns true if the kick fired, false if KnifeController is null (no melee weapon).
+    /// </summary>
+    private static bool TryKnifeKick(BotOwner bot, BotMeleeWeaponData melee)
+    {
+        var knifeCtrl = melee.KnifeController;
+        if (knifeCtrl == null) return false;
+
+        var botId = ZombieDebug.BotId(bot);
+        float time = Time.time;
+
+        // Use the same per-bot cooldown as direct attacks
+        if (_lastDirectAttackTime.TryGetValue(botId, out float lastTime) && time - lastTime < DirectAttackCooldown)
+            return true; // Still in cooldown — return true so we don't fall through to direct damage
+
+        _lastDirectAttackTime[botId] = time;
+
+        try
+        {
+            // THE KEY CALL — triggers swipe animation + vanilla hit detection/damage
+            bool result = knifeCtrl.MakeKnifeKick();
+            _knifeKickCount++;
+
+            // Vocalization (same as vanilla method_2)
+            bot.BotTalk?.DropNextSayPeriod();
+            bot.BotTalk?.Say(EPhraseTrigger.KnifeKill, sayImmediately: true);
+
+            if (!_loggedFirstKnifeKick)
+            {
+                _loggedFirstKnifeKick = true;
+                Plugin.Log.LogWarning($"[ZSlayerHQ] ZombieMelee: FIRST MakeKnifeKick by {botId} (result={result})");
+            }
+
+            return true;
+        }
+        catch (System.Exception ex)
+        {
+            ZombieDebug.LogThrottled($"kick-err-{botId}", 10f,
+                $"KnifeKick error for {botId}: {ex.Message}");
             return false;
         }
     }
