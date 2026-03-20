@@ -1,5 +1,6 @@
 using EFT;
 using HarmonyLib;
+using ZSlayerZombieClient.Animation;
 using ZSlayerZombieClient.Core;
 
 namespace ZSlayerZombieClient.Patches;
@@ -23,6 +24,9 @@ public class BotSpawnPatch
 
         // Register zombie (lazy — may already be registered via layer activation)
         var entry = ZombieRegistry.GetOrRegister(__instance);
+
+        // Initialize animation system (bone controller + animator speed)
+        ZombieAnimationController.InitializeAnimation(__instance, entry.Archetype.Type);
 
         // Set nickname to archetype name so kill feed / AmandsSense / telemetry shows "Stalker" instead of "???"
         // Profile.Nickname is a computed property (=> Info.Nickname), and Info.Nickname is a public string field.
