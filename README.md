@@ -6,6 +6,8 @@
 ![SAIN](https://img.shields.io/badge/SAIN-Optional-green?style=flat-square)
 ![Command Center](https://img.shields.io/badge/Command_Center-Optional-green?style=flat-square)
 
+> **⚠️ WORK IN PROGRESS** — This mod is under active development. Zombie archetypes still need extensive work and testing. Expect rough edges, balance issues, and bugs. Feedback welcome.
+
 A comprehensive zombie overhaul for SPT 4.0 / FIKA. Replaces vanilla zombie behavior with rich, varied archetypes — shamblers that stumble through doorways, runners that sprint in terrifying bursts, crawlers that hug walls, stalkers that flank from behind, and berserkers that never stop coming.
 
 **Two components work together:**
